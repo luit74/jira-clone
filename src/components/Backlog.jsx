@@ -7,19 +7,25 @@ const Backlog = () => {
   const [selectedTicket, setSelectedTicket] = useState(null);
   const userEmail = localStorage.getItem("loggedInUser");
   const ticketKey = `tickets_${userEmail}`;
-  
-  console.log('userEmail:', userEmail)
-  // console.log("ticketKey" , ticketKey);
-
-  
 
   useEffect(() => {
     loadTickets();
   }, []);
 
   const loadTickets = () => {
-    const savedTickets = JSON.parse(localStorage.getItem(ticketKey)) || [];
-    const ticketsWithIndex = savedTickets.map((ticket, index) => ({ ...ticket, index }));
+    const savedData = JSON.parse(localStorage.getItem(ticketKey)) || [];
+
+    // If the structure is an object with `.main`, fallback to that
+    const myTickets = Array.isArray(savedData) ? savedData : savedData.main || [];
+
+    // Filter out DONE tickets
+    const filtered = myTickets.filter((ticket) => ticket.status !== "DONE");
+
+    const ticketsWithIndex = filtered.map((ticket, index) => ({
+      ...ticket,
+      index,
+    }));
+
     setTickets(ticketsWithIndex);
   };
 
@@ -29,16 +35,7 @@ const Backlog = () => {
 
   const handleCloseSidebar = () => {
     setSelectedTicket(null);
-    loadTickets(); 
-  };
-
-  const handleDelete = () => {
-    if (selectedTicket) {
-      const updatedTickets = tickets.filter((_, i) => i !== selectedTicket.index);
-      localStorage.setItem(ticketKey , JSON.stringify(updatedTickets));
-      setSelectedTicket(null);
-      loadTickets();
-    }
+    loadTickets(); // Refresh after closing sidebar (e.g., after editing)
   };
 
   return (
@@ -51,23 +48,33 @@ const Backlog = () => {
         <table className="ticket-table" border="1" cellPadding="10">
           <thead>
             <tr>
-              <th>Date</th>
+              <th>Ticket ID</th>
               <th>Title</th>
               <th>Work Type</th>
               <th>Status</th>
-              <th>Action</th>
+              <th>Date</th>
             </tr>
           </thead>
           <tbody>
             {tickets.map((ticket, index) => (
               <tr key={index}>
-                <td>{new Date(ticket.createdAt).toLocaleDateString()}</td>
+                <td
+                  onClick={() => handleOpenSidebar(ticket)}
+                  style={{
+                    color: "blue",
+                    fontWeight: "800",
+                    cursor: "pointer",
+                    fontFamily: "sans-serif",
+                  }}
+                >
+                  {ticket.id
+                    ? `ES-${ticket.id.slice(0, 6).toUpperCase()}`
+                    : "N/A"}
+                </td>
                 <td>{ticket.title}</td>
                 <td>{ticket.workType}</td>
                 <td>{ticket.status}</td>
-                <td>
-                  <button onClick={() => handleOpenSidebar(ticket)}>View</button>
-                </td>
+                <td>{new Date(ticket.createdAt).toLocaleDateString()}</td>
               </tr>
             ))}
           </tbody>
@@ -75,11 +82,24 @@ const Backlog = () => {
       )}
 
       {selectedTicket && (
-        <TicketSidebar
-          ticket={selectedTicket}
-          onClose={handleCloseSidebar}
-          onDelete={handleDelete}
-        />
+        <div
+          onClick={handleCloseSidebar}
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100vw",
+            height: "100vh",
+            backgroundColor: "rgba(0,0,0,0.2)",
+            zIndex: 999,
+          }}
+        >
+          <TicketSidebar
+            ticket={selectedTicket}
+            onClose={handleCloseSidebar}
+            onStatusChange={loadTickets}
+          />
+        </div>
       )}
     </div>
   );

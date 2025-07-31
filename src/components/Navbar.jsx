@@ -23,7 +23,8 @@ export default function Navbar() {
             Create Ticket
           </button>
           <Link to="/backlog">Backlogs</Link>
-          <Link to='completed-task'>Completed Task</Link>
+          <Link to='complete-task'>Completed Task</Link>
+          <Link to="/assigned">Task Assigned To</Link>
         </div>
         <nav className="nav-links">
           

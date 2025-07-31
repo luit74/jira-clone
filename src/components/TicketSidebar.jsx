@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import "../styles/ticketsidebar.css";
 
 const statusOptions = [
   "DONE",
@@ -10,74 +11,151 @@ const statusOptions = [
   "IN AUDIT",
 ];
 
-const TicketSidebar = ({ ticket, onClose, onDelete }) => {
+const workTypeOptions = ["Bug", "Fix", "Improvement", "Task"];
+
+const TicketSidebar = ({ ticket, onClose, onStatusChange }) => {
   const [status, setStatus] = useState(ticket?.status || "");
+  const [editMode, setEditMode] = useState(false);
+  const [title, setTitle] = useState(ticket?.title || "");
+  const [description, setDescription] = useState(ticket?.description || "");
+  const [workType, setWorkType] = useState(ticket?.workType || "");
 
   useEffect(() => {
-    setStatus(ticket.status);
+    if (ticket) {
+      setStatus(ticket.status);
+      setTitle(ticket.title);
+      setDescription(ticket.description);
+      setWorkType(ticket.workType);
+    }
   }, [ticket]);
+
+  const updateTicketInStorage = (updatedFields) => {
+    const userEmail = localStorage.getItem("loggedInUser");
+    const ticketKey = `tickets_${userEmail}`;
+    const stored = JSON.parse(localStorage.getItem(ticketKey)) || {};
+    const { main = [], assignee = [] } = stored;
+
+    const updateList = (list) =>
+      list.map((t) =>
+        t.id === ticket.id
+          ? { ...t, ...updatedFields, updatedAt: new Date().toISOString() }
+          : t
+      );
+
+    const updatedData = {
+      main: updateList(main),
+      assignee: updateList(assignee),
+    };
+
+    localStorage.setItem(ticketKey, JSON.stringify(updatedData));
+  };
 
   const handleStatusChange = (e) => {
     const newStatus = e.target.value;
     setStatus(newStatus);
 
-    let storedTickets = JSON.parse(localStorage.getItem("tickets")) || [];
+    updateTicketInStorage({ status: newStatus });
 
-    if (newStatus === "DONE") {
-      // Delete ticket
-      const updatedTickets = storedTickets.filter((_, i) => i !== ticket.index);
-      localStorage.setItem("tickets", JSON.stringify(updatedTickets));
-      onDelete(); // triggers state update and closes sidebar
+    if (onStatusChange) onStatusChange();
+    if (newStatus === "DONE" && onClose) onClose();
+  };
+
+  const handleEditSave = () => {
+    if (!editMode) {
+      setEditMode(true);
     } else {
-      // Just update status
-      const updatedTickets = storedTickets.map((t, i) =>
-        i === ticket.index ? { ...t, status: newStatus } : t
-      );
-      localStorage.setItem("tickets", JSON.stringify(updatedTickets));
+      // Save
+      updateTicketInStorage({
+        title,
+        description,
+        workType,
+      });
+
+      setEditMode(false);
+      if (onStatusChange) onStatusChange();
+      if (onClose) onClose();
     }
   };
 
   if (!ticket) return null;
 
   return (
-    <div
-      style={{
-        position: "fixed",
-        top: 0,
-        right: 0,
-        width: "30rem",
-        height: "100%",
-        background: "#fff",
-        borderLeft: "1px solid #ccc",
-        padding: "1rem",
-        boxShadow: "-2px 0 5px rgba(0,0,0,0.1)",
-        zIndex: 1000,
-      }}
-    >
-      <div style={{ display: "flex", justifyContent: "space-between" }}>
-        <h3>Ticket Details</h3>
-        <button onClick={onClose}>&times;</button>
+    <div className="ticket-sidebar" onClick={(e) => e.stopPropagation()}>
+      <div className="ticket-sidebar-header">
+        <h3>🎟️ Ticket Details</h3>
+        <button className="edit-btn" onClick={handleEditSave}>
+          {editMode ? "Save" : "Edit"}
+        </button>
       </div>
 
-      <p><strong>Title:</strong> {ticket.title}</p>
-      <p><strong>Created:</strong> {new Date(ticket.createdAt).toLocaleString()}</p>
-      <p><strong>Description:</strong> {ticket.description}</p>
-      <p><strong>Work Type:</strong> {ticket.workType}</p>
+      <div className="ticket-info">
+        <p>
+          <strong>Title:</strong>{" "}
+          {editMode ? (
+            <input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              style={{ width: "100%", border: "1px solid #bfbfbf" }}
+            />
+          ) : (
+            title
+          )}
+        </p>
 
-      <div style={{ margin: "0.5rem 0" }}>
-        <strong>Status:</strong>
+        <p>
+          <strong>Description:</strong>{" "}
+          {editMode ? (
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="input-field"
+            />
+          ) : (
+            description
+          )}
+        </p>
+
+        <p>
+          <strong>Work Type:</strong>{" "}
+          {editMode ? (
+            <select
+              value={workType}
+              onChange={(e) => setWorkType(e.target.value)}
+              className="dropdown-field"
+            >
+              <option value="">Select Work Type</option>
+              {workTypeOptions.map((type) => (
+                <option key={type} value={type}>
+                  {type}
+                </option>
+              ))}
+            </select>
+          ) : (
+            workType
+          )}
+        </p>
+
+        <p>
+          <strong>Created At:</strong>{" "}
+          {new Date(ticket.createdAt).toLocaleString()}
+        </p>
+        {ticket.updatedAt && (
+          <p>
+            <strong>Updated At:</strong>{" "}
+            {new Date(ticket.updatedAt).toLocaleString()}
+          </p>
+        )}
+      </div>
+
+      <div className="ticket-status">
+        <label htmlFor="status-select">
+          <strong>Status:</strong>
+        </label>
         <select
+          id="status-select"
           value={status}
           onChange={handleStatusChange}
           className="status-dropdown"
-          style={{
-            display: "block",
-            marginTop: "0.5rem",
-            padding: "0.4rem",
-            width: "39%",
-            background: "white",
-            color: "black",
-          }}
         >
           <option value="">Select Status</option>
           {statusOptions.map((option) => (
