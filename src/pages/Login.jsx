@@ -16,6 +16,7 @@ export default function Login() {
   const handleLogin = (e) => {
     e.preventDefault();
     const stored = JSON.parse(localStorage.getItem(form.email));
+    console.log("---->",stored)
     if (stored && stored.password === form.password) {
       login(stored);
       navigate("/dashboard");
