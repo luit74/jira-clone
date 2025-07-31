@@ -1,0 +1,29 @@
+.ticket-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+.ticket-table th,
+.ticket-table td {
+  padding: 0.75rem;
+  text-align: left;
+  border: 1px solid #ddd;
+}
+
+.ticket-table th {
+  background-color: #f9f9f9;
+}
+
+.ticket-table button {
+  padding: 0.4rem 0.8rem;
+  border: none;
+  background-color: #f44336;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.ticket-table button:hover {
+  background-color: #d32f2f;
+}

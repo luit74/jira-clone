@@ -1,0 +1,19 @@
+.main-header{
+    display: flex;
+    justify-content: space-between;
+    box-shadow: rgba(0, 0, 0, 0.1) 0px 20px 25px -5px, rgba(0, 0, 0, 0.04) 0px 10px 10px -5px;
+    padding: 10px;
+
+}
+.create-btn{
+    background-color: #0065ff;
+    font-size: large;
+}
+.create-btn:hover{
+    background-color: #003a92;
+}
+.search-box{
+    display: flex;
+    gap: 10px;
+    margin: .4rem;
+}
