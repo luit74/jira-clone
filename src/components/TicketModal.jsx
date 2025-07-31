@@ -27,7 +27,7 @@ export default function TicketModal({ onClose }) {
       createdAt: new Date().toISOString(),
     };
 
-    const userEmail = localStorage.getItem("loggedInUser");
+    const userEmail = localStorage.getItem("loggedInUser")?.toLowerCase();
     const ticketKey = `tickets_${userEmail}`;
 
     const existingTickets = JSON.parse(localStorage.getItem(ticketKey)) || [];

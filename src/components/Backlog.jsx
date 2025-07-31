@@ -5,7 +5,7 @@ import "../styles/backlog.css";
 const Backlog = () => {
   const [tickets, setTickets] = useState([]);
   const [selectedTicket, setSelectedTicket] = useState(null);
-  const userEmail = localStorage.getItem("user");
+  const userEmail = localStorage.getItem("loggedInUser");
   const ticketKey = `tickets_${userEmail}`;
   
   console.log('userEmail:', userEmail)
