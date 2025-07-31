@@ -9,6 +9,8 @@ import Home from "./pages/Home";
 
 import Backlog from "./components/Backlog";
 import Layout from "./layout/layout";
+import CompletedTask from "./pages/CompletedTask";
+import AssignedTasks from "./pages/AssignedTask";
 
 function App() {
   return (
@@ -31,6 +33,8 @@ function App() {
           >
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="backlog" element={<Backlog />} />
+            <Route path="complete-task" element={<CompletedTask />} />
+            <Route path="/assigned" element={<AssignedTasks />} />
           </Route>
         </Routes>
       </Router>

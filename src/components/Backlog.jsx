@@ -1,4 +1,3 @@
-// src/components/Backlog.jsx
 import { useEffect, useState } from "react";
 import TicketSidebar from "./TicketSidebar";
 import "../styles/backlog.css";
@@ -14,12 +13,19 @@ const Backlog = () => {
   }, []);
 
   const loadTickets = () => {
-    const savedTickets = JSON.parse(localStorage.getItem(ticketKey)) || [];
-    const filtered = savedTickets.filter((ticket) => ticket.status !== "DONE");
+    const savedData = JSON.parse(localStorage.getItem(ticketKey)) || [];
+
+    // If the structure is an object with `.main`, fallback to that
+    const myTickets = Array.isArray(savedData) ? savedData : savedData.main || [];
+
+    // Filter out DONE tickets
+    const filtered = myTickets.filter((ticket) => ticket.status !== "DONE");
+
     const ticketsWithIndex = filtered.map((ticket, index) => ({
       ...ticket,
       index,
     }));
+
     setTickets(ticketsWithIndex);
   };
 
@@ -29,7 +35,7 @@ const Backlog = () => {
 
   const handleCloseSidebar = () => {
     setSelectedTicket(null);
-    loadTickets();
+    loadTickets(); // Refresh after closing sidebar (e.g., after editing)
   };
 
   return (
@@ -91,6 +97,7 @@ const Backlog = () => {
           <TicketSidebar
             ticket={selectedTicket}
             onClose={handleCloseSidebar}
+            onStatusChange={loadTickets}
           />
         </div>
       )}
