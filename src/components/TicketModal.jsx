@@ -3,7 +3,6 @@ import "../styles/ticketmodal.css";
 export default function TicketModal({ onClose }) {
   const workTypeOptions = ["Bug", "Fix", "Improvement", "Task"];
   const statusOptions = [
-    "DONE",
     "IN DEVELOPMENT",
     "IN TESTING",
     "READY FOR AUDIT",
@@ -20,6 +19,7 @@ export default function TicketModal({ onClose }) {
     const status = e.target.status.value;
 
     const newTicket = {
+      id: crypto.randomUUID(),
       title,
       description,
       workType,

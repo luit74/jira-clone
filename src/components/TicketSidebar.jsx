@@ -1,3 +1,4 @@
+// src/components/TicketSidebar.jsx
 import { useEffect, useState } from "react";
 
 const statusOptions = [
@@ -10,7 +11,7 @@ const statusOptions = [
   "IN AUDIT",
 ];
 
-const TicketSidebar = ({ ticket, onClose, onDelete }) => {
+const TicketSidebar = ({ ticket, onClose }) => {
   const [status, setStatus] = useState(ticket?.status || "");
 
   useEffect(() => {
@@ -21,31 +22,32 @@ const TicketSidebar = ({ ticket, onClose, onDelete }) => {
     const newStatus = e.target.value;
     setStatus(newStatus);
 
-    let storedTickets = JSON.parse(localStorage.getItem("tickets")) || [];
+    const userEmail = localStorage.getItem("loggedInUser");
+    const ticketKey = `tickets_${userEmail}`;
+    const storedTickets = JSON.parse(localStorage.getItem(ticketKey)) || [];
+
+    const updatedTickets = storedTickets.map((t, i) =>
+      i === ticket.index ? { ...t, status: newStatus } : t
+    );
+
+    localStorage.setItem(ticketKey, JSON.stringify(updatedTickets));
 
     if (newStatus === "DONE") {
-      // Delete ticket
-      const updatedTickets = storedTickets.filter((_, i) => i !== ticket.index);
-      localStorage.setItem("tickets", JSON.stringify(updatedTickets));
-      onDelete(); // triggers state update and closes sidebar
-    } else {
-      // Just update status
-      const updatedTickets = storedTickets.map((t, i) =>
-        i === ticket.index ? { ...t, status: newStatus } : t
-      );
-      localStorage.setItem("tickets", JSON.stringify(updatedTickets));
+      onClose();
     }
   };
 
   if (!ticket) return null;
 
   return (
+    // Prevent click from propagating to the overlay
     <div
+      onClick={(e) => e.stopPropagation()}
       style={{
         position: "fixed",
         top: 0,
         right: 0,
-        width: "30rem",
+        width: "35rem",
         height: "100%",
         background: "#fff",
         borderLeft: "1px solid #ccc",
@@ -59,10 +61,19 @@ const TicketSidebar = ({ ticket, onClose, onDelete }) => {
         <button onClick={onClose}>&times;</button>
       </div>
 
-      <p><strong>Title:</strong> {ticket.title}</p>
-      <p><strong>Created:</strong> {new Date(ticket.createdAt).toLocaleString()}</p>
-      <p><strong>Description:</strong> {ticket.description}</p>
-      <p><strong>Work Type:</strong> {ticket.workType}</p>
+      <p>
+        <strong>Title:</strong> {ticket.title}
+      </p>
+      <p>
+        <strong>Created:</strong>{" "}
+        {new Date(ticket.createdAt).toLocaleString()}
+      </p>
+      <p>
+        <strong>Description:</strong> {ticket.description}
+      </p>
+      <p>
+        <strong>Work Type:</strong> {ticket.workType}
+      </p>
 
       <div style={{ margin: "0.5rem 0" }}>
         <strong>Status:</strong>
