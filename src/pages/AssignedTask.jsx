@@ -87,13 +87,13 @@ const AssignedTasks = () => {
           className={activeTab === "my" ? "tab active" : "tab"}
           onClick={() => setActiveTab("my")}
         >
-          My Tasks
+          By me
         </button>
         <button
           className={activeTab === "others" ? "tab active" : "tab"}
           onClick={() => setActiveTab("others")}
         >
-          Others' Tasks
+          For me
         </button>
       </div>
 
