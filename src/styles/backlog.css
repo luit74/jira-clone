@@ -27,3 +27,20 @@
 .ticket-table button:hover {
   background-color: #d32f2f;
 }
+.ticket-id-link {
+  color: blue;
+  font-weight: 800;
+  cursor: pointer;
+  font-family: sans-serif;
+}
+
+.sidebar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.2);
+  z-index: 999;
+}
+

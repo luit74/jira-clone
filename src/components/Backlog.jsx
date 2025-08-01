@@ -57,13 +57,8 @@ const Backlog = () => {
             {tickets.map((ticket, index) => (
               <tr key={index}>
                 <td
+                  className="ticket-id-link"
                   onClick={() => handleOpenSidebar(ticket)}
-                  style={{
-                    color: "blue",
-                    fontWeight: "800",
-                    cursor: "pointer",
-                    fontFamily: "sans-serif",
-                  }}
                 >
                   {ticket.id
                     ? `ES-${ticket.id.slice(0, 6).toUpperCase()}`
@@ -80,18 +75,7 @@ const Backlog = () => {
       )}
 
       {selectedTicket && (
-        <div
-          onClick={handleCloseSidebar}
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100vw",
-            height: "100vh",
-            backgroundColor: "rgba(0,0,0,0.2)",
-            zIndex: 999,
-          }}
-        >
+        <div className="sidebar-overlay" onClick={handleCloseSidebar}>
           <TicketSidebar
             ticket={selectedTicket}
             onClose={handleCloseSidebar}
