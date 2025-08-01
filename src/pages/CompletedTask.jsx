@@ -1,10 +1,10 @@
 // src/components/CompletedTask.jsx
 import { useEffect, useState } from "react";
-import "../styles/backlog.css"; // CSS should already handle the styling
+import "../styles/backlog.css";
 
 const CompletedTask = () => {
   const [completedTickets, setCompletedTickets] = useState([]);
-  const userEmail = localStorage.getItem("loggedInUser");
+  const userEmail = localStorage.getItem("loggedInUser")?.toLowerCase();
   const ticketKey = `tickets_${userEmail}`;
 
   useEffect(() => {
@@ -14,21 +14,30 @@ const CompletedTask = () => {
   const loadCompletedTickets = () => {
     const saved = JSON.parse(localStorage.getItem(ticketKey)) || {};
     const mainTickets = Array.isArray(saved.main) ? saved.main : [];
-    const doneTickets = mainTickets
-      .map((ticket, index) => ({ ...ticket, index }))
-      .filter((ticket) => ticket.status === "DONE");
+
+    // ✅ Only filter tickets from "main" where status === "DONE"
+    const doneTickets = mainTickets.filter((ticket) => ticket.status === "DONE");
+
     setCompletedTickets(doneTickets);
   };
 
-  const handleDelete = (indexToDelete) => {
+  const handleDelete = (ticketIdToDelete) => {
     const saved = JSON.parse(localStorage.getItem(ticketKey)) || {};
     const mainTickets = Array.isArray(saved.main) ? saved.main : [];
 
-    const updatedMain = mainTickets.filter((_, i) => i !== indexToDelete);
+    // Remove the ticket with the matching ID
+    const updatedMain = mainTickets.filter(ticket => ticket.id !== ticketIdToDelete);
     const updatedData = { ...saved, main: updatedMain };
 
+    // Update user's tickets
     localStorage.setItem(ticketKey, JSON.stringify(updatedData));
-    loadCompletedTickets(); // Refresh list
+
+    // ✅ Also remove from central all_tickets storage
+    const allTickets = JSON.parse(localStorage.getItem("all_tickets")) || [];
+    const updatedAllTickets = allTickets.filter(ticket => ticket.id !== ticketIdToDelete);
+    localStorage.setItem("all_tickets", JSON.stringify(updatedAllTickets));
+
+    loadCompletedTickets(); // Refresh
   };
 
   return (
@@ -51,24 +60,16 @@ const CompletedTask = () => {
             </tr>
           </thead>
           <tbody>
-            {completedTickets.map((ticket, index) => (
-              <tr key={index}>
-                <td>
-                  {ticket.id
-                    ? `ES-${ticket.id.slice(0, 6).toUpperCase()}`
-                    : "N/A"}
-                </td>
+            {completedTickets.map((ticket) => (
+              <tr key={ticket.id}>
+                <td>{`ES-${ticket.id.slice(0, 6).toUpperCase()}`}</td>
                 <td>{ticket.title}</td>
                 <td>{ticket.workType}</td>
                 <td>{ticket.status}</td>
                 <td>{new Date(ticket.createdAt).toLocaleDateString()}</td>
+                <td>{ticket.updatedAt ? new Date(ticket.updatedAt).toLocaleDateString() : "-"}</td>
                 <td>
-                  {ticket.updatedAt
-                    ? new Date(ticket.updatedAt).toLocaleDateString()
-                    : "-"}
-                </td>
-                <td>
-                  <button onClick={() => handleDelete(ticket.index)}>
+                  <button onClick={() => handleDelete(ticket.id)}>
                     Delete
                   </button>
                 </td>

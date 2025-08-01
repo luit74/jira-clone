@@ -22,7 +22,8 @@ export default function TicketModal({ onClose }) {
       if (
         key !== "loggedInUser" &&
         key !== "user" &&
-        !key.startsWith("tickets_")
+        !key.startsWith("tickets_") &&
+        !key.startsWith("all_tickets")
       ) {
         try {
           const userData = JSON.parse(localStorage.getItem(key));
@@ -72,30 +73,42 @@ export default function TicketModal({ onClose }) {
       updatedAt: new Date().toISOString(),
     };
 
-    // ✅ 1. Store in centralized `all_tickets`
+    // ✅ Centralized store
     const allTickets = JSON.parse(localStorage.getItem("all_tickets")) || [];
     allTickets.push(newTicket);
     localStorage.setItem("all_tickets", JSON.stringify(allTickets));
 
-    // ✅ 2. Store in per-user structure
+    // ✅ Creator's storage
     const creatorKey = `tickets_${creatorEmail}`;
-    const existingData = JSON.parse(localStorage.getItem(creatorKey)) || {};
-    const existingMain = existingData.main || [];
-    const existingAssignee = existingData.assignee || [];
+    const creatorData = JSON.parse(localStorage.getItem(creatorKey)) || {};
+    const main = creatorData.main || [];
+    const assignee = creatorData.assignee || [];
 
-    if (assigneeUser.email === creatorEmail) {
-      // Assigned to self → main
-      const updatedMain = [...existingMain, newTicket];
+    if (creatorEmail === assigneeUser.email) {
+      // Assigned to self → goes in main
       localStorage.setItem(
         creatorKey,
-        JSON.stringify({ ...existingData, main: updatedMain })
+        JSON.stringify({ ...creatorData, main: [...main, newTicket] })
       );
     } else {
-      // Assigned to others → assignee
-      const updatedAssignee = [...existingAssignee, newTicket];
+      // Assigned to others → goes in assignee
       localStorage.setItem(
         creatorKey,
-        JSON.stringify({ ...existingData, assignee: updatedAssignee })
+        JSON.stringify({ ...creatorData, assignee: [...assignee, newTicket] })
+      );
+
+      // ✅ Assignee's storage → goes in assignment
+      const assigneeKey = `tickets_${assigneeUser.email.toLowerCase()}`;
+      const assigneeData =
+        JSON.parse(localStorage.getItem(assigneeKey)) || {};
+      const assignment = assigneeData.assignment || [];
+
+      localStorage.setItem(
+        assigneeKey,
+        JSON.stringify({
+          ...assigneeData,
+          assignment: [...assignment, newTicket],
+        })
       );
     }
 
