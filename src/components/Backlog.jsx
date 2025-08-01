@@ -5,7 +5,8 @@ import "../styles/backlog.css";
 const Backlog = () => {
   const [tickets, setTickets] = useState([]);
   const [selectedTicket, setSelectedTicket] = useState(null);
-  const userEmail = localStorage.getItem("loggedInUser");
+
+  const userEmail = localStorage.getItem("loggedInUser")?.toLowerCase();
   const ticketKey = `tickets_${userEmail}`;
 
   useEffect(() => {
@@ -13,20 +14,17 @@ const Backlog = () => {
   }, []);
 
   const loadTickets = () => {
-    const savedData = JSON.parse(localStorage.getItem(ticketKey)) || [];
+    const savedData = JSON.parse(localStorage.getItem(ticketKey)) || {};
+    const mainTickets = savedData.main || [];
 
-    // If the structure is an object with `.main`, fallback to that
-    const myTickets = Array.isArray(savedData) ? savedData : savedData.main || [];
+    const activeTickets = mainTickets.filter((ticket) => ticket.status !== "DONE");
 
-    // Filter out DONE tickets
-    const filtered = myTickets.filter((ticket) => ticket.status !== "DONE");
-
-    const ticketsWithIndex = filtered.map((ticket, index) => ({
+    const indexed = activeTickets.map((ticket, index) => ({
       ...ticket,
       index,
     }));
 
-    setTickets(ticketsWithIndex);
+    setTickets(indexed);
   };
 
   const handleOpenSidebar = (ticket) => {
@@ -35,7 +33,7 @@ const Backlog = () => {
 
   const handleCloseSidebar = () => {
     setSelectedTicket(null);
-    loadTickets(); // Refresh after closing sidebar (e.g., after editing)
+    loadTickets(); // Refresh after sidebar close (e.g. edit)
   };
 
   return (

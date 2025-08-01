@@ -24,7 +24,7 @@ export default function Navbar() {
           </button>
           <Link to="/backlog">Backlogs</Link>
           <Link to='complete-task'>Completed Task</Link>
-          <Link to="/assigned">Task Assigned To</Link>
+          <Link to="/assigned">Assigned Task</Link>
         </div>
         <nav className="nav-links">
           
