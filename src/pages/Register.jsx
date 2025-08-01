@@ -1,11 +1,13 @@
 // src/pages/Register.jsx
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import toast, { Toaster } from "react-hot-toast";
 
 export default function Register() {
   const [form, setForm] = useState({ email: "", password: "", firstName: "" });
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -19,8 +21,11 @@ export default function Register() {
       setTimeout(() => navigate("/login"), 2000);
     } else {
       localStorage.setItem(form.email, JSON.stringify(form));
-      toast.success("Registration successful. You can now login.");
-      setTimeout(() => navigate("/login"), 2000);
+
+      login(form);
+
+      toast.success("Registration successful. Logging you in...");
+      setTimeout(() => navigate("/dashboard"), 1500);
     }
   };
 
@@ -31,8 +36,7 @@ export default function Register() {
         <form className="form-container" onSubmit={handleRegister}>
           <h1>Register</h1>
           <p style={{ fontSize: "1.8rem" }}>
-            Quickly register yourself and enjoy{" "}
-            <span className="title">JIRA</span> 🎉
+            Quickly register yourself and enjoy <span className="title">JIRA</span> 🎉
           </p>
           <input
             type="text"

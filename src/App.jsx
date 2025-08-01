@@ -17,20 +17,16 @@ function App() {
     <AuthProvider>
       <Router>
         <Routes>
-          {/* Public Routes */}
           <Route path="/" element={<Home />} />
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
-
-          {/* Protected Layout Routes */}
           <Route
             path="/"
             element={
               <ProtectedRoute>
                 <Layout />
               </ProtectedRoute>
-            }
-          >
+            }>
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="backlog" element={<Backlog />} />
             <Route path="complete-task" element={<CompletedTask />} />

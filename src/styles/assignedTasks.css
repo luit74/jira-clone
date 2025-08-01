@@ -1,0 +1,41 @@
+.assigned-tasks-container {
+  padding: 2rem;
+}
+
+.tab-buttons {
+  margin-bottom: 1rem;
+}
+
+.tab {
+  padding: 8px 16px;
+  margin-right: 10px;
+  background-color: #f0f0f0;
+  color: #000;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.tab.active {
+  background-color: #007bff;
+  color: #fff;
+}
+
+.ticket-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.ticket-table th,
+.ticket-table td {
+  padding: 10px;
+  text-align: left;
+  border: 1px solid #ddd;
+}
+
+.ticket-id {
+  font-weight: bold;
+  color: blue;
+  cursor: default;
+}

@@ -38,132 +38,74 @@ export default function TicketModal({ onClose }) {
     setUsers(userList);
   }, []);
 
-//   const handleSubmitTicket = (e) => {
-//     e.preventDefault();
+  const handleSubmitTicket = (e) => {
+    e.preventDefault();
 
-//     const title = e.target.title.value;
-//     const description = e.target.description.value;
-//     const workType = e.target.workType.value;
-//     const status = e.target.status.value;
-//     const assigneeEmail = e.target.assignee.value;
+    const title = e.target.title.value;
+    const description = e.target.description.value;
+    const workType = e.target.workType.value;
+    const status = e.target.status.value;
+    const assigneeEmail = e.target.assignee.value;
 
-//     const creatorEmail = localStorage.getItem("loggedInUser")?.toLowerCase();
-//     const creatorKey = `tickets_${creatorEmail}`;
+    const creatorEmail = localStorage.getItem("loggedInUser")?.toLowerCase();
+    const assigneeUser =
+      assigneeEmail === "self"
+        ? { email: creatorEmail, firstName: "You" }
+        : users.find(
+            (user) => user?.email?.toLowerCase() === assigneeEmail.toLowerCase()
+          );
 
-//     const assigneeUser =
-//       assigneeEmail === "self"
-//         ? { email: creatorEmail, firstName: "You" }
-//         : users.find((user) => user.email === assigneeEmail);
+    if (!assigneeUser || !assigneeUser.email) {
+      alert("Invalid assignee selected.");
+      return;
+    }
 
-//     const newTicket = {
-//       id: crypto.randomUUID(),
-//       title,
-//       description,
-//       workType,
-//       status,
-//       assignee: {
-//         email: assigneeUser.email,
-//         name: assigneeUser.firstName,
-//       },
-//       createdAt: new Date().toISOString(),
-//     };
+    const newTicket = {
+      id: crypto.randomUUID(),
+      title,
+      description,
+      workType,
+      status,
+      creator: creatorEmail,
+      assignee: assigneeUser.email.toLowerCase(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
 
-//     if (assigneeEmail === "self") {
-//       // Save into my tickets (backlog)
-//       const existingMyTickets =
-//         JSON.parse(localStorage.getItem(creatorKey)) || [];
-//       localStorage.setItem(
-//         creatorKey,
-//         JSON.stringify([...existingMyTickets, newTicket])
-//       );
-//       console.log("Ticket saved in your backlog");
-//     } else {
-//       // Save only in assignee's ticket object, under `assignee` key
-//       const assigneeKey = `tickets_${assigneeEmail.toLowerCase()}`;
-//       const existingData = JSON.parse(localStorage.getItem(assigneeKey)) || {};
-//       const updatedAssigneeTickets = Array.isArray(existingData.assignee)
-//         ? [...existingData.assignee, newTicket]
-//         : [newTicket];
+    // ✅ 1. Store in centralized `all_tickets`
+    const allTickets = JSON.parse(localStorage.getItem("all_tickets")) || [];
+    allTickets.push(newTicket);
+    localStorage.setItem("all_tickets", JSON.stringify(allTickets));
 
-//       const updatedStorage = {
-//         ...existingData,
-//         assignee: updatedAssigneeTickets,
-//       };
+    // ✅ 2. Store in per-user structure
+    const creatorKey = `tickets_${creatorEmail}`;
+    const existingData = JSON.parse(localStorage.getItem(creatorKey)) || {};
+    const existingMain = existingData.main || [];
+    const existingAssignee = existingData.assignee || [];
 
-//       localStorage.setItem(assigneeKey, JSON.stringify(updatedStorage));
-//       console.log("Ticket saved under assignee's nested object");
-//     }
+    if (assigneeUser.email === creatorEmail) {
+      // Assigned to self → main
+      const updatedMain = [...existingMain, newTicket];
+      localStorage.setItem(
+        creatorKey,
+        JSON.stringify({ ...existingData, main: updatedMain })
+      );
+    } else {
+      // Assigned to others → assignee
+      const updatedAssignee = [...existingAssignee, newTicket];
+      localStorage.setItem(
+        creatorKey,
+        JSON.stringify({ ...existingData, assignee: updatedAssignee })
+      );
+    }
 
-//     onClose();
-//   };
-
-    const handleSubmitTicket = (e) => {
-  e.preventDefault();
-
-  const title = e.target.title.value;
-  const description = e.target.description.value;
-  const workType = e.target.workType.value;
-  const status = e.target.status.value;
-  const assigneeEmail = e.target.assignee.value;
-
-  const creatorEmail = localStorage.getItem("loggedInUser")?.toLowerCase();
-  const creatorKey = `tickets_${creatorEmail}`;
-
-  // Get full user object
-  const assigneeUser =
-    assigneeEmail === "self"
-      ? { email: creatorEmail, firstName: "You" }
-      : users.find((user) => user.email === assigneeEmail);
-
-  const newTicket = {
-    id: crypto.randomUUID(),
-    title,
-    description,
-    workType,
-    status,
-    assigned: {
-      email: assigneeUser.email,
-      name: assigneeUser.firstName,
-    },
-    createdAt: new Date().toISOString(),
+    onClose();
   };
-
-  // Load existing tickets
-  const existingData = JSON.parse(localStorage.getItem(creatorKey)) || {};
-  const existingMain = existingData.main || [];
-  const existingAssignee = existingData.assignee || [];
-
-  // Save based on assignee
-  if (assigneeUser.email === creatorEmail) {
-    // Assigned to myself → save to main
-    const updatedMain = [...existingMain, newTicket];
-    localStorage.setItem(
-      creatorKey,
-      JSON.stringify({ ...existingData, main: updatedMain })
-    );
-  } else {
-    // Assigned to someone else → save to nested `assignee`
-    const updatedAssignee = [...existingAssignee, newTicket];
-    localStorage.setItem(
-      creatorKey,
-      JSON.stringify({ ...existingData, assignee: updatedAssignee })
-    );
-  }
-
-  onClose();
-};
-
 
   return (
     <div className="modal-overlay">
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            marginBottom: "1rem",
-          }}
-        >
+        <div className="modal-header">
           <h2>Create Ticket</h2>
           <button className="close-button" onClick={onClose}>
             &times;
@@ -173,7 +115,7 @@ export default function TicketModal({ onClose }) {
         <form onSubmit={handleSubmitTicket} className="ticket-form">
           <input name="title" placeholder="Title" required />
           <textarea
-            style={{ width: "41rem" }}
+            style={{ width: "100%" }}
             name="description"
             placeholder="Description"
             required
